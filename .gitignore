@@ -171,4 +171,7 @@ cython_debug/
 ehthumbs.db
 Thumbs.db
 
+# FITS files (actual data)
+.fits
+*.fits
 
