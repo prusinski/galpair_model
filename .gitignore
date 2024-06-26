@@ -174,4 +174,9 @@ Thumbs.db
 # FITS files (actual data)
 .fits
 *.fits
+.h5
+*.h5
+.hdf5
+*.hdf5
+
 
