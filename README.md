@@ -17,7 +17,16 @@ Constructing a idealized galaxy model with outflow and inflow components based o
 
 6/26/24: going to try running an MCMC using the trimmed box.
 
+
+## `python` scripts
+
+The python scripts in `python_scripts` are based on `chen+20_model_fast` and can be run on a mac with `multiprocessing`.
+
+The outputs are in `MCMC_outputs`
+
 ---
+
+
 
 - `lya_centroid` looks at folding the Ly$`\alpha`$ profile and assuming some sort of symmetry.
 
