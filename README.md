@@ -19,7 +19,7 @@ Constructing a idealized galaxy model with outflow and inflow components based o
 
 ---
 
-- `lya_centroid` looks at folding the Ly$\alpha$ profile and assuming some sort of symmetry.
+- `lya_centroid` looks at folding the Ly$`\alpha`$ profile and assuming some sort of symmetry.
 
 
 `vbt_plots` makes `lya_map_<date>.fits` files and these can be convolved using `lya_map_convolve` to make `lay_conv_<date>.fits` files.
