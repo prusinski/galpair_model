@@ -41,7 +41,7 @@ def vins(r, voff):
 def vouts(r, vi):
     vout = np.sqrt(vi**2 + A*(-np.log((Rs+1)/Rs) + (1/r * np.log((Rs+r)/Rs))))
     return vout
-    
+
 def ains(r, a0in, gin):
     ain = (a0in * (r/100)**(-gin))
     return ain
@@ -65,8 +65,8 @@ def model(theta):
 
     rawhmap = np.zeros((len(vrawsamp), len(bvec)))
 
-    
-    
+
+
     for bi, b in enumerate(bvec):
 
         lmax_out = np.sqrt(rmax_out**2 - b**2)
@@ -79,7 +79,7 @@ def model(theta):
         larr_slowr_out = np.linspace(100, lmax_out, 100)
         larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
         r_out = np.sqrt(larr_out**2 + b**2)
-        
+
         tau_outs = aouts(r_out, a0out, gout)
         tau_outs_arr = np.array(tau_outs)
 
@@ -90,7 +90,7 @@ def model(theta):
         larr_slowr_in = np.linspace(100, lmax_in, 100)
         larr_in = np.concatenate([larr_slowl_in, larr_fast_in, larr_slowr_in])
         r_in = np.sqrt(larr_in**2 + b**2)
-        
+
         tau_ins = ains(r_in, a0in, gin)
         tau_ins_arr = np.array(tau_ins)
 
@@ -109,7 +109,7 @@ def model(theta):
         # plt.axvline(0, c = 'k', alpha = 0.7, lw = 0.7, ls = '--')
         # plt.tight_layout()
         # plt.show()
-    
+
         maxvout = np.nanmax(vLOS_out)
         maxvin = np.nanmax(vLOS_in)
 
@@ -118,13 +118,13 @@ def model(theta):
             for j in vrawsamp:
                 taulist_out.append([j, 0])
             continue
-            
+
         if ~np.isfinite(maxvin):
             # print(f'bad {b}')
             for j in vrawsamp:
                 taulist_in.append([j, 0])
             continue
-        
+
         l_minvout = larr_out[np.argmin(vLOS_out)]
         l_maxvout = larr_out[np.argmax(vLOS_out)]
 
@@ -134,7 +134,7 @@ def model(theta):
 
         taulist_out = []
         taulist_in = []
-        
+
         for vl in vrawsamp:
             # outflow
             if np.abs(vl) > maxvout:
@@ -143,15 +143,15 @@ def model(theta):
                 possible_values = larr_out[(vLOS_out > vl) & (vLOS_out < vl+30)]
                 l_near = possible_values[(possible_values > l_minvout) & (possible_values < l_maxvout)]
                 l_far = possible_values[(possible_values < l_minvout) | (possible_values > l_maxvout)]
-        
+
                 tau_near_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_near]
                 tau_out_near = tau_outs_arr[tau_near_inds]
-        
-                
+
+
                 tau_far_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_far]
                 tau_out_far = tau_outs_arr[tau_far_inds]
                 tau_tot_out = np.nanmean(tau_out_near) + np.nan_to_num(np.nanmean(tau_out_far))
-    
+
                 if np.isfinite(tau_tot_out):
                     taulist_out.append([vl+15, tau_tot_out])
 
@@ -163,19 +163,19 @@ def model(theta):
                 # print(possible_values)
                 l_near = possible_values[(possible_values < l_minvin) & (possible_values > l_maxvin)]
                 l_far = possible_values[(possible_values > l_minvin) | (possible_values < l_maxvin)]
-        
+
                 tau_near_inds = [np.argwhere(larr_in == ln)[0][0] for ln in l_near]
                 tau_in_near = tau_ins_arr[tau_near_inds]
-        
-                
+
+
                 tau_far_inds = [np.argwhere(larr_in == ln)[0][0] for ln in l_far]
                 tau_in_far = tau_ins_arr[tau_far_inds]
                 tau_tot_in = np.nan_to_num(np.nanmean(tau_in_near)) + np.nan_to_num(np.nanmean(tau_in_far))
                 # print(tau_tot)
-    
+
                 if np.isfinite(tau_tot_in):
                     taulist_in.append([vl+15, tau_tot_in])
-        
+
         tauarr_out = np.array(taulist_out) # v, tau
         tauarr_in = np.array(taulist_in)
 
@@ -199,7 +199,7 @@ def model(theta):
     hmap_reshaped = f(vvec_final, bvec_final)
 
     return hmap_reshaped
-    
+
 
 def lnlike(theta, truth = lya_real):
     return -0.5 * np.nansum((lya_real - model(theta))**2)
@@ -227,18 +227,18 @@ def lnprob(theta):
 
 if __name__ == '__main__':
 
-    nwalkers = 40
+    nwalkers = 50
     niter = 5000
     initial = np.array([900, -300, 0.07, 0.2, 1, 0.5])
     ndims = len(initial)
 
     p0 = initial_pos = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
 
-    filename = "../MCMC_outputs/trimmed_40w_5000it.h5"
+    filename = "../MCMC_outputs/trimmed_50w_5000it.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
-    with Pool(10) as pool:
+    with Pool(9) as pool:
 
         sampler = emcee.EnsembleSampler(nwalkers, ndims, lnprob, pool=pool, backend=backend)
         sampler.reset()
@@ -247,4 +247,3 @@ if __name__ == '__main__':
         pos, prob, state = sampler.run_mcmc(p0, niter, progress=True)
 
         # return sampler, pos, prob, state
-
