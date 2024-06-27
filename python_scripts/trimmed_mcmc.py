@@ -227,14 +227,14 @@ def lnprob(theta):
 
 if __name__ == '__main__':
 
-    nwalkers = 25
-    niter = 500
+    nwalkers = 40
+    niter = 5000
     initial = np.array([900, -300, 0.07, 0.2, 1, 0.5])
     ndims = len(initial)
 
     p0 = initial_pos = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
 
-    filename = "../MCMC_outputs/trimmed_25w_500it.h5"
+    filename = "../MCMC_outputs/trimmed_40w_5000it.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
