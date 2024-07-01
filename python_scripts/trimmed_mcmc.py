@@ -32,7 +32,7 @@ bvec_final = np.arange(min_b, max_b+2.5, 5)
 vvec_final = np.arange(-1000, 1025, 50)
 
 lya_real = fits.open('../lya_conv_240701.fits')[0].data
-lya_err_real = fits.open('lya_error_conv_240701.fits')[0].data
+lya_err_real = fits.open('../lya_error_conv_240701.fits')[0].data
 
 def vins(r, voff):
     vin = voff + H*r
@@ -227,14 +227,14 @@ def lnprob(theta):
 
 if __name__ == '__main__':
 
-    nwalkers = 5
-    niter = 50
+    nwalkers = 50
+    niter = 5000
     initial = np.array([900, -300, 0.07, 0.2, 1, 0.5])
     ndims = len(initial)
 
     p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
 
-    filename = "../MCMC_outputs/trimmed_5w_50it.h5"
+    filename = "../MCMC_outputs/trimmed_50w_5000it.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
