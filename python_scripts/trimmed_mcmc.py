@@ -17,10 +17,10 @@ z = 2.3 # redshift
 Rs = 27 # kpc = Rvir = 90 kpc
 H = cosmo.H(z).to('km/s/kpc').value
 
-noise_level = 0.01
+noise_level = 0.02
 A = 1.2e7 #* u.km**2/u.s**2
 
-bres = 2 # kpc
+bres = 5 # kpc
 min_b = 10 # kpc
 max_b = 250 # kpc
 bvec = np.arange(min_b, max_b, bres)
@@ -29,10 +29,10 @@ vrawsamp = np.arange(-1000, 1015, 30)
 bm, vm = np.meshgrid(bvec, vrawsamp)
 
 bvec_final = np.arange(min_b, max_b+2.5, 5)
-vvec_final = np.arange(-1000, 1050, 100)
+vvec_final = np.arange(-1000, 1025, 50)
 
-lya_real = fits.open('../lya_conv_240623.fits')[0].data
-
+lya_real = fits.open('../lya_conv_240701.fits')[0].data
+lya_err_real = fits.open('lya_error_conv_240701.fits')[0].data
 
 def vins(r, voff):
     vin = voff + H*r
@@ -73,10 +73,10 @@ def model(theta):
         lmax_in = np.sqrt(rmax_in**2 - b**2)
 
 
-        larr_slowl_out = np.linspace(-lmax_out, -100, 100)
-        nfast_out = int(1500 * np.exp(-b/100)) #1500
-        larr_fast_out = np.linspace(-100, 100, nfast_out)
-        larr_slowr_out = np.linspace(100, lmax_out, 100)
+        larr_slowl_out = np.linspace(-lmax_out, -200, 50)
+        nfast_out = int(vi/900 * 1200 * np.exp(-b/200)) #1500
+        larr_fast_out = np.linspace(-200, 200, nfast_out)
+        larr_slowr_out = np.linspace(200, lmax_out, 50)
         larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
         r_out = np.sqrt(larr_out**2 + b**2)
 
@@ -84,10 +84,10 @@ def model(theta):
         tau_outs_arr = np.array(tau_outs)
 
 
-        larr_slowl_in = np.linspace(-lmax_in, -100, 100)
-        nfast_in = int(1500 * np.exp(-b/100)) #1500
+        larr_slowl_in = np.linspace(-lmax_in, -100, 50)
+        nfast_in = int(500 * np.exp(-b/100)) #1500
         larr_fast_in = np.linspace(-100, 100, nfast_in)
-        larr_slowr_in = np.linspace(100, lmax_in, 100)
+        larr_slowr_in = np.linspace(100, lmax_in, 50)
         larr_in = np.concatenate([larr_slowl_in, larr_fast_in, larr_slowr_in])
         r_in = np.sqrt(larr_in**2 + b**2)
 
@@ -193,7 +193,7 @@ def model(theta):
             # tau_tot = tau_tot_out + tau_tot_in
             # taulist.append([b, vl+15, tau_tot])
 
-    hmap_conv = convolve(rawhmap, Gaussian2DKernel(2,1), boundary = 'extend') # 100 km/s and 5 kpc sampling
+    hmap_conv = convolve(rawhmap, Gaussian2DKernel(1,1), boundary = 'extend') # 100 km/s and 5 kpc sampling
 
     f = interp.RectBivariateSpline(vrawsamp, bvec, hmap_conv, kx=3, ky=3)
     hmap_reshaped = f(vvec_final, bvec_final)
@@ -201,8 +201,8 @@ def model(theta):
     return hmap_reshaped
 
 
-def lnlike(theta, truth = lya_real):
-    return -0.5 * np.nansum((lya_real - model(theta))**2)
+def lnlike(theta):
+    return -0.5 * np.nansum(((lya_real - model(theta))/lya_err_real)**2)
 
 def lnprior(theta):
     vi, voff, a0out, a0in, gout, gin = theta
@@ -227,18 +227,18 @@ def lnprob(theta):
 
 if __name__ == '__main__':
 
-    nwalkers = 50
-    niter = 5000
+    nwalkers = 5
+    niter = 50
     initial = np.array([900, -300, 0.07, 0.2, 1, 0.5])
     ndims = len(initial)
 
-    p0 = initial_pos = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
+    p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
 
-    filename = "../MCMC_outputs/trimmed_50w_5000it.h5"
+    filename = "../MCMC_outputs/trimmed_5w_50it.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
-    with Pool(9) as pool:
+    with Pool(10) as pool:
 
         sampler = emcee.EnsembleSampler(nwalkers, ndims, lnprob, pool=pool, backend=backend)
         sampler.reset()
