@@ -31,8 +31,8 @@ bm, vm = np.meshgrid(bvec, vrawsamp)
 bvec_final = np.arange(min_b, max_b+2.5, 5)
 vvec_final = np.arange(-1000, 1025, 50)
 
-lya_real = fits.open('../lya_conv_240701.fits')[0].data
-lya_err_real = fits.open('../lya_error_conv_240701.fits')[0].data
+lya_real = fits.open('../lya_conv_240811.fits')[0].data
+lya_err_real = fits.open('../lya_error_conv_240811.fits')[0].data
 
 def vins(r, voff):
     vin = voff + H*r
@@ -203,16 +203,17 @@ def model(theta):
 
 def lnlike(theta):
     return -0.5 * np.nansum(((lya_real - model(theta))/lya_err_real)**2)
+    # return -0.5 * np.nansum((lya_real - model(theta))**2)
 
 def lnprior(theta):
     vi, voff, a0out, a0in, gout, gin = theta
 
     vir = (450 < vi < 1000)
-    voffr = (-500 < voff < -20)
+    voffr = (-370 < voff < -250)
     a0outr = (0 < a0out < 1)
-    a0inr = (0 < a0in < 1)
-    goutr = (0 < gout < 3)
-    ginr = (0 < gin < 3)
+    a0inr = (0. < a0in < 0.4)
+    goutr = (0 < gout < 2)
+    ginr = (0.3 < gin < 0.5)
 
     if vir and voffr and a0outr and a0inr and goutr and ginr:
         return 0.0
@@ -227,14 +228,15 @@ def lnprob(theta):
 
 if __name__ == '__main__':
 
-    nwalkers = 50
-    niter = 5000
-    initial = np.array([900, -300, 0.07, 0.2, 1, 0.5])
+    nwalkers = 60
+    niter = 7500
+    initial = np.array([700, -300, 0.1, 0.3, 0.2, 0.4])
     ndims = len(initial)
 
     p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
+    # print(p0)
 
-    filename = "../MCMC_outputs/trimmed_50w_5000it.h5"
+    filename = "../MCMC_outputs/trimmed_60w_7500it.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 

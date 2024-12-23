@@ -31,8 +31,8 @@ bm, vm = np.meshgrid(bvec, vrawsamp)
 bvec_final = np.arange(min_b, max_b+2.5, 5)
 vvec_final = np.arange(-1000, 1025, 50)
 
-lya_real = fits.open('../lya_conv_240701.fits')[0].data
-lya_err_real = fits.open('../lya_error_conv_240701.fits')[0].data
+lya_real = fits.open('../lya_conv_240811.fits')[0].data
+lya_err_real = fits.open('../lya_error_conv_240811.fits')[0].data
 
 # def vins(r, voff):
 #     vin = voff + H*r
@@ -229,16 +229,16 @@ if __name__ == '__main__':
 
     nwalkers = 20
     niter = 1500
-    initial = np.array([900, 0.07, 1])
+    initial = np.array([700, 0.07, 1])
     ndims = len(initial)
 
-    p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
+    p0 = [initial * (1 + 0.1*np.random.randn(ndims)) for i in range(nwalkers)]
 
-    filename = "../MCMC_outputs/trimmed_outonly_20w_1500it.h5"
+    filename = "../MCMC_outputs/trimmed_outonly_30w_1500it.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
-    with Pool(7) as pool:
+    with Pool(10) as pool:
 
         sampler = emcee.EnsembleSampler(nwalkers, ndims, lnprob, pool=pool, backend=backend)
         sampler.reset()
