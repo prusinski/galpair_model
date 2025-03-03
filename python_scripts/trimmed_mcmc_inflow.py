@@ -38,24 +38,24 @@ def vins(r, voff):
     vin = voff + H*r
     return vin
 
-def vouts(r, vi):
-    vout = np.sqrt(vi**2 + A*(-np.log((Rs+1)/Rs) + (1/r * np.log((Rs+r)/Rs))))
-    return vout
+# def vouts(r, vi):
+#     vout = np.sqrt(vi**2 + A*(-np.log((Rs+1)/Rs) + (1/r * np.log((Rs+r)/Rs))))
+#     return vout
 
 def ains(r, a0in, gin):
     ain = (a0in * (r/100)**(-gin))
     return ain
 
-def aouts(r, a0out, gout):
-    aout = (a0out * (r/100)**(-gout))
-    return aout
+# def aouts(r, a0out, gout):
+#     aout = (a0out * (r/100)**(-gout))
+#     return aout
 
 
 
 def model(theta):
-    vi, voff, a0out, a0in, gout, gin = theta
+    voff, a0in, gin = theta
 
-    rmax_out = 100 * (a0out/noise_level)**(1/gout)
+    # rmax_out = 100 * (a0out/noise_level)**(1/gout)
     # print(rmax_out)
     rmax_in_est = 100 * (a0in/noise_level)**(1/gin)
     rmax_in_max = 10000
@@ -69,19 +69,19 @@ def model(theta):
 
     for bi, b in enumerate(bvec):
 
-        lmax_out = np.sqrt(rmax_out**2 - b**2)
+        # lmax_out = np.sqrt(rmax_out**2 - b**2)
         lmax_in = np.sqrt(rmax_in**2 - b**2)
 
 
-        larr_slowl_out = np.linspace(-lmax_out, -200, 50)
-        nfast_out = int(vi/900 * 1200 * np.exp(-b/200)) #1500
-        larr_fast_out = np.linspace(-200, 200, nfast_out)
-        larr_slowr_out = np.linspace(200, lmax_out, 50)
-        larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
-        r_out = np.sqrt(larr_out**2 + b**2)
-
-        tau_outs = aouts(r_out, a0out, gout)
-        tau_outs_arr = np.array(tau_outs)
+        # larr_slowl_out = np.linspace(-lmax_out, -200, 50)
+        # nfast_out = int(vi/900 * 1200 * np.exp(-b/200)) #1500
+        # larr_fast_out = np.linspace(-200, 200, nfast_out)
+        # larr_slowr_out = np.linspace(200, lmax_out, 50)
+        # larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
+        # r_out = np.sqrt(larr_out**2 + b**2)
+        #
+        # tau_outs = aouts(r_out, a0out, gout)
+        # tau_outs_arr = np.array(tau_outs)
 
 
         larr_slowl_in = np.linspace(-lmax_in, -100, 50)
@@ -95,7 +95,7 @@ def model(theta):
         tau_ins_arr = np.array(tau_ins)
 
 
-        vLOS_out = larr_out/r_out*vouts(r_out, vi)
+        # vLOS_out = larr_out/r_out*vouts(r_out, vi)
         vLOS_in = larr_in/r_in*vins(r_in, voff)
         # plt.figure()
         # sc = plt.scatter(larr_out, vLOS_out, c=tau_outs)
@@ -110,14 +110,14 @@ def model(theta):
         # plt.tight_layout()
         # plt.show()
 
-        maxvout = np.nanmax(vLOS_out)
+        # maxvout = np.nanmax(vLOS_out)
         maxvin = np.nanmax(vLOS_in)
 
         # bad b's
-        if ~np.isfinite(maxvout):
-            for j in vrawsamp:
-                taulist_out.append([j, 0])
-            continue
+        # if ~np.isfinite(maxvout):
+        #     for j in vrawsamp:
+        #         taulist_out.append([j, 0])
+        #     continue
 
         if ~np.isfinite(maxvin):
             # print(f'bad {b}')
@@ -125,35 +125,35 @@ def model(theta):
                 taulist_in.append([j, 0])
             continue
 
-        l_minvout = larr_out[np.argmin(vLOS_out)]
-        l_maxvout = larr_out[np.argmax(vLOS_out)]
+        # l_minvout = larr_out[np.argmin(vLOS_out)]
+        # l_maxvout = larr_out[np.argmax(vLOS_out)]
 
         l_minvin = larr_in[np.argmin(vLOS_in)]
         l_maxvin = larr_in[np.argmax(vLOS_in)]
 
 
-        taulist_out = []
+        # taulist_out = []
         taulist_in = []
 
         for vl in vrawsamp:
-            # outflow
-            if np.abs(vl) > maxvout:
-                taulist_out.append([vl+15, 0])
-            else:
-                possible_values = larr_out[(vLOS_out > vl) & (vLOS_out < vl+30)]
-                l_near = possible_values[(possible_values > l_minvout) & (possible_values < l_maxvout)]
-                l_far = possible_values[(possible_values < l_minvout) | (possible_values > l_maxvout)]
-
-                tau_near_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_near]
-                tau_out_near = tau_outs_arr[tau_near_inds]
-
-
-                tau_far_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_far]
-                tau_out_far = tau_outs_arr[tau_far_inds]
-                tau_tot_out = np.nanmean(tau_out_near) + np.nan_to_num(np.nanmean(tau_out_far))
-
-                if np.isfinite(tau_tot_out):
-                    taulist_out.append([vl+15, tau_tot_out])
+            # # outflow
+            # if np.abs(vl) > maxvout:
+            #     taulist_out.append([vl+15, 0])
+            # else:
+            #     possible_values = larr_out[(vLOS_out > vl) & (vLOS_out < vl+30)]
+            #     l_near = possible_values[(possible_values > l_minvout) & (possible_values < l_maxvout)]
+            #     l_far = possible_values[(possible_values < l_minvout) | (possible_values > l_maxvout)]
+            #
+            #     tau_near_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_near]
+            #     tau_out_near = tau_outs_arr[tau_near_inds]
+            #
+            #
+            #     tau_far_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_far]
+            #     tau_out_far = tau_outs_arr[tau_far_inds]
+            #     tau_tot_out = np.nanmean(tau_out_near) + np.nan_to_num(np.nanmean(tau_out_far))
+            #
+            #     if np.isfinite(tau_tot_out):
+            #         taulist_out.append([vl+15, tau_tot_out])
 
             # inflow
             if np.abs(vl) > maxvin:
@@ -176,24 +176,24 @@ def model(theta):
                 if np.isfinite(tau_tot_in):
                     taulist_in.append([vl+15, tau_tot_in])
 
-        tauarr_out = np.array(taulist_out) # v, tau
+        # tauarr_out = np.array(taulist_out) # v, tau
         tauarr_in = np.array(taulist_in)
 
-        if len(tauarr_out) == 0:
-            tout = vrawsamp*0.0
-        else:
-            tout = np.interp(vrawsamp, tauarr_out[:,0], tauarr_out[:,1], left=0, right=0)
+        # if len(tauarr_out) == 0:
+        #     tout = vrawsamp*0.0
+        # else:
+        #     tout = np.interp(vrawsamp, tauarr_out[:,0], tauarr_out[:,1], left=0, right=0)
 
         if len(tauarr_in) == 0:
             tin = vrawsamp*0.0
         else:
             tin = np.interp(vrawsamp, tauarr_in[:,0], tauarr_in[:,1], left=0, right=0)
 
-        rawhmap[:,bi] = tout + tin
+        rawhmap[:,bi] = tin
             # tau_tot = tau_tot_out + tau_tot_in
             # taulist.append([b, vl+15, tau_tot])
 
-    hmap_conv = convolve(rawhmap, Gaussian2DKernel(1,1), boundary = 'extend') # 100 km/s and 5 kpc sampling
+    hmap_conv = convolve(rawhmap, Gaussian2DKernel(2,2), boundary = 'extend') # 100 km/s and 5 kpc sampling
 
     f = interp.RectBivariateSpline(vrawsamp, bvec, hmap_conv, kx=3, ky=3)
     hmap_reshaped = f(vvec_final, bvec_final)
@@ -202,20 +202,20 @@ def model(theta):
 
 
 def lnlike(theta):
-    # return -0.5 * np.nansum(((lya_real - model(theta))/lya_err_real)**2)
-    return -0.5 * np.nansum((lya_real - model(theta))**2)
+    return -0.5 * np.nansum(((lya_real - model(theta))/lya_err_real)**2)
+    # return -0.5 * np.nansum((lya_real - model(theta))**2)
 
 def lnprior(theta):
-    vi, voff, a0out, a0in, gout, gin = theta
+    voff, a0in, gin = theta
 
-    vir = (400 < vi < 1100)
-    voffr = (-800 < voff < 0)
-    a0outr = (0 < a0out < 0.4)
-    a0inr = (0. < a0in < 0.4)
-    goutr = (0. < gout < 3)
-    ginr = (0.0 < gin < 3)
+    # vir = (450 < vi < 1000)
+    voffr = (-500 < voff < -10)
+    # a0outr = (0 < a0out < 1)
+    a0inr = (0. < a0in < 1)
+    # goutr = (0 < gout < 2)
+    ginr = (0 < gin < 2)
 
-    if vir and voffr and a0outr and a0inr and goutr and ginr:
+    if voffr and a0inr and ginr:
         return 0.0
 
     return -np.inf
@@ -230,13 +230,13 @@ if __name__ == '__main__':
 
     nwalkers = 60
     niter = 7500
-    initial = np.array([750, -450, 0.1, 0.1, 0.32, 0.37])
+    initial = np.array([-300, 0.3, 0.4])
     ndims = len(initial)
 
     p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
     # print(p0)
 
-    filename = "../MCMC_outputs/trimmed_60w_7500it_250303-both.h5"
+    filename = "../MCMC_outputs/trimmed_60w_7500it_250303-inflow.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
