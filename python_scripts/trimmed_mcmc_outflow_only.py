@@ -55,11 +55,15 @@ def aouts(r, a0out, gout):
 def model(theta):
     vi, a0out, gout = theta
 
-    rmax_out = 100 * (a0out/noise_level)**(1/gout)
+    rmax = 500 #kpc
+    rmax_out = rmax
+    # rmax_in = rmax
+    # rmax_out = 100 * (a0out/noise_level)**(1/gout)
+    # rmax_out = np.min([rmax_out_est, rmax])
     # print(rmax_out)
     # rmax_in_est = 100 * (a0in/noise_level)**(1/gin)
-    # rmax_in_max = 10000
-    # rmax_in = np.min([rmax_in_est, rmax_in_max])
+
+    # rmax_in = np.min([rmax_in_est, rmax])
     # print(rmax_in)
 
 
@@ -70,18 +74,22 @@ def model(theta):
     for bi, b in enumerate(bvec):
 
         lmax_out = np.sqrt(rmax_out**2 - b**2)
-        # lmax_in = np.sqrt(rmax_in**2 - b**2)
+        # lmax_in = np.sqrt(rmax_in**2 - b**2) #np.nanmin([np.sqrt((-voff/H)**2-b**2), np.sqrt(rmax_in**2 - b**2)])
 
 
-        larr_slowl_out = np.linspace(-lmax_out, -200, 50)
-        nfast_out = int(vi/900 * 1200 * np.exp(-b/200)) #1500
-        larr_fast_out = np.linspace(-200, 200, nfast_out)
-        larr_slowr_out = np.linspace(200, lmax_out, 50)
-        larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
+        # larr_slowl_out = np.linspace(-lmax_out, -200, 50)
+        # nfast_out = int(vi/900 * 1200 * np.exp(-b/200)) #1500
+        # larr_fast_out = np.linspace(-200, 200, nfast_out)
+        # larr_slowr_out = np.linspace(200, lmax_out, 50)
+        # larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
+
+        larr_out = np.linspace(-lmax_out, lmax_out, 1000)
+
         r_out = np.sqrt(larr_out**2 + b**2)
 
         tau_outs = aouts(r_out, a0out, gout)
         tau_outs_arr = np.array(tau_outs)
+        # print(tau_outs_arr)
 
 
         # larr_slowl_in = np.linspace(-lmax_in, -100, 50)
@@ -89,10 +97,20 @@ def model(theta):
         # larr_fast_in = np.linspace(-100, 100, nfast_in)
         # larr_slowr_in = np.linspace(100, lmax_in, 50)
         # larr_in = np.concatenate([larr_slowl_in, larr_fast_in, larr_slowr_in])
+
+        # larr_in = np.linspace(-lmax_in, lmax_in, 1000)
         # r_in = np.sqrt(larr_in**2 + b**2)
-        #
+
+        # lmaxcalc = np.sqrt((-voff/H)**2-b**2)
+        # print(lmaxcalc)
+
         # tau_ins = ains(r_in, a0in, gin)
         # tau_ins_arr = np.array(tau_ins)
+
+        # plt.figure()
+        # plt.plot(larr_out, tau_outs, 'b.')
+        # # plt.plot(larr_in, tau_ins, 'r.')
+        # plt.show()
 
 
         vLOS_out = larr_out/r_out*vouts(r_out, vi)
@@ -150,12 +168,12 @@ def model(theta):
 
                 tau_far_inds = [np.argwhere(larr_out == ln)[0][0] for ln in l_far]
                 tau_out_far = tau_outs_arr[tau_far_inds]
-                tau_tot_out = np.nanmean(tau_out_near) + np.nan_to_num(np.nanmean(tau_out_far))
+                tau_tot_out = np.nan_to_num(np.nanmean(tau_out_near)) + np.nan_to_num(np.nanmean(tau_out_far))
 
                 if np.isfinite(tau_tot_out):
                     taulist_out.append([vl+15, tau_tot_out])
 
-            # # inflow
+            # inflow
             # if np.abs(vl) > maxvin:
             #     taulist_in.append([vl+15, 0])
             # else:
@@ -189,16 +207,102 @@ def model(theta):
         # else:
         #     tin = np.interp(vrawsamp, tauarr_in[:,0], tauarr_in[:,1], left=0, right=0)
 
-        rawhmap[:,bi] = tout # + tin
+        rawhmap[:,bi] = tout
             # tau_tot = tau_tot_out + tau_tot_in
             # taulist.append([b, vl+15, tau_tot])
+
+
+
+
+    # points = tauarr[:,0:2]
+    # values = tauarr[:,2]
+    # rawhmap = interp.griddata(points, values, (bm, vm), method='nearest')
+
+    # plt.figure()
+    # plt.imshow(rawhmap, origin='lower')
+    # plt.show()
+
+
+
+
+    # print(tauarr_out[np.isfinite(tauarr_out[:,2])])
+    # plt.figure()
+    # plt.scatter(tauarr_out[:,1], tauarr_out[:,2])
+    # plt.plot(vrawsamp, tout)
+    # plt.plot(vrawsamp, tin)
+    # plt.show()
+
+    # plt.figure()
+    # sc = plt.scatter(tauarr_out[:,0], tauarr_out[:,1], c=tauarr_out[:,2]) #/cmap='inferno_r' vmin=2e-2, vmax = 1e-1 norm=matplotlib.colors.LogNorm()
+    # plt.colorbar(sc, label = '$\\tau_\\mathrm{out}$')
+
+    # # tin = plt.scatter(tauarr_in[:,0], tauarr_in[:,1], c=tauarr_in[:,2], cmap='plasma_r') #/cmap='inferno_r' vmin=2e-2, vmax = 1e-1 norm=matplotlib.colors.LogNorm()
+    # # plt.colorbar(tin, label = '$\\tau_\\mathrm{in}$')
+    # plt.xlabel('b (kpc)')
+    # plt.ylabel('$v_\\mathrm{LOS}$ (km/s)')
+    # plt.tight_layout()
+    # plt.show()
+
+    # make map
+
+    # vres = 10 #50
+    # vlosr = np.arange(-1000, 1000, vres)
+
+    # hmap = np.zeros((len(vlosr), len(bvec)))
+
+    # for bi, b in enumerate(bvec):
+    #     bcut_out = (tauarr_out[:,0] == b)
+    #     bcut_in = (tauarr_in[:,0] == b)
+
+    #     for vind, v in enumerate(vlosr):
+    #         vcut_out = (tauarr_out[:,1] > v) & (tauarr_out[:,1] < v+vres)
+    #         vcut_in = (tauarr_in[:,1] > v) & (tauarr_in[:,1] < v+vres)
+
+    #         tauavg_out = np.nanmean(tauarr_out[:,2][bcut_out & vcut_out])
+    #         if ~np.isfinite(tauavg_out):
+    #             tauavg_out = 0
+
+    #         tauavg_in = np.nanmean(tauarr_in[:,2][bcut_in & vcut_in])
+    #         if ~np.isfinite(tauavg_in):
+    #             tauavg_in = 0
+
+    #         hmap[vind,bi] = tauavg_out + tauavg_in
 
     hmap_conv = convolve(rawhmap, Gaussian2DKernel(1,1), boundary = 'extend') # 100 km/s and 5 kpc sampling
 
     f = interp.RectBivariateSpline(vrawsamp, bvec, hmap_conv, kx=3, ky=3)
     hmap_reshaped = f(vvec_final, bvec_final)
 
+    # print(new_im.shape)
+
+    # plt.figure()
+    # plt.imshow(hmap_reshaped, aspect='auto', origin='lower', extent = [bvec_final.min(), bvec_final.max(), vvec_final.min(), vvec_final.max()])
+    # plt.show()
+
+    # # # print(hmap.shape)
+    # plt.figure()
+    # us = plt.imshow(rawhmap, origin='lower', extent = (bvec[0], bvec[-1], vrawsamp[0], vrawsamp[-1]),
+    #            aspect='auto', cmap='plasma')
+    # plt.colorbar(us, label = '$\\tau_\\mathrm{tot}$')
+    # plt.xlabel('b (kpc)')
+    # plt.ylabel('$v_\\mathrm{LOS}$ (km/s)')
+    # plt.title('Unsmoothed')
+    # # plt.xscale('log')
+    # plt.show()
+
+    # plt.figure()
+    # sm = plt.imshow(hmap_conv, origin='lower', extent = (bvec[0], bvec[-1], vrawsamp[0], vrawsamp[-1]),
+    #            aspect='auto', cmap='inferno')
+    # plt.colorbar(sm, label = '$\\tau_\\mathrm{tot}$')
+    # plt.xlabel('b (kpc)')
+    # plt.ylabel('$v_\\mathrm{LOS}$ (km/s)')
+    # plt.title('Smoothed')
+    # # plt.xscale('log')
+    # plt.show()
+
     return hmap_reshaped
+
+
 
 
 def lnlike(theta):
@@ -229,7 +333,7 @@ if __name__ == '__main__':
 
     nwalkers = 30
     niter = 6000
-    initial = np.array([700, 0.07, 1])
+    initial = np.array([700, 0.1, 1])
     ndims = len(initial)
 
     p0 = [initial * (1 + 0.1*np.random.randn(ndims)) for i in range(nwalkers)]
