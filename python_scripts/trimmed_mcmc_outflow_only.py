@@ -83,7 +83,7 @@ def model(theta):
         # larr_slowr_out = np.linspace(200, lmax_out, 50)
         # larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
 
-        larr_out = np.linspace(-lmax_out, lmax_out, 1000)
+        larr_out = np.linspace(-lmax_out, lmax_out, 2000)
 
         r_out = np.sqrt(larr_out**2 + b**2)
 
@@ -194,8 +194,11 @@ def model(theta):
             #     if np.isfinite(tau_tot_in):
             #         taulist_in.append([vl+15, tau_tot_in])
 
-        tauarr_out = np.array(taulist_out) # v, tau
-        # tauarr_in = np.array(taulist_in)
+        tauarr_out_wzeros = np.array(taulist_out) # v, tau
+        # tauarr_in_wzeros = np.array(taulist_in)
+
+        tauarr_out = tauarr_out_wzeros[tauarr_out_wzeros[:,1] > 0]
+        # tauarr_in = tauarr_in_wzeros[tauarr_in_wzeros[:,1] > 0]
 
         if len(tauarr_out) == 0:
             tout = vrawsamp*0.0
@@ -338,7 +341,7 @@ if __name__ == '__main__':
 
     p0 = [initial * (1 + 0.1*np.random.randn(ndims)) for i in range(nwalkers)]
 
-    filename = "../MCMC_outputs/trimmed_outonly_30w_6000it_250303.h5"
+    filename = "../MCMC_outputs/trimmed_outonly_30w_6000it_250304.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 

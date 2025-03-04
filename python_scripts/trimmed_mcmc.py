@@ -83,7 +83,7 @@ def model(theta):
         # larr_slowr_out = np.linspace(200, lmax_out, 50)
         # larr_out = np.concatenate([larr_slowl_out, larr_fast_out, larr_slowr_out])
 
-        larr_out = np.linspace(-lmax_out, lmax_out, 1000)
+        larr_out = np.linspace(-lmax_out, lmax_out, 2000)
 
         r_out = np.sqrt(larr_out**2 + b**2)
 
@@ -98,7 +98,7 @@ def model(theta):
         # larr_slowr_in = np.linspace(100, lmax_in, 50)
         # larr_in = np.concatenate([larr_slowl_in, larr_fast_in, larr_slowr_in])
 
-        larr_in = np.linspace(-lmax_in, lmax_in, 1000)
+        larr_in = np.linspace(-lmax_in, lmax_in, 2000)
         r_in = np.sqrt(larr_in**2 + b**2)
 
         # lmaxcalc = np.sqrt((-voff/H)**2-b**2)
@@ -194,8 +194,11 @@ def model(theta):
                 if np.isfinite(tau_tot_in):
                     taulist_in.append([vl+15, tau_tot_in])
 
-        tauarr_out = np.array(taulist_out) # v, tau
-        tauarr_in = np.array(taulist_in)
+        tauarr_out_wzeros = np.array(taulist_out) # v, tau
+        tauarr_in_wzeros = np.array(taulist_in)
+
+        tauarr_out = tauarr_out_wzeros[tauarr_out_wzeros[:,1] > 0]
+        tauarr_in = tauarr_in_wzeros[tauarr_in_wzeros[:,1] > 0]
 
         if len(tauarr_out) == 0:
             tout = vrawsamp*0.0
@@ -268,7 +271,7 @@ def model(theta):
 
     #         hmap[vind,bi] = tauavg_out + tauavg_in
 
-    hmap_conv = convolve(rawhmap, Gaussian2DKernel(1,1), boundary = 'extend') # 100 km/s and 5 kpc sampling
+    hmap_conv = convolve(rawhmap, Gaussian2DKernel(2,2), boundary = 'extend') # 100 km/s and 5 kpc sampling
 
     f = interp.RectBivariateSpline(vrawsamp, bvec, hmap_conv, kx=3, ky=3)
     hmap_reshaped = f(vvec_final, bvec_final)
@@ -340,7 +343,7 @@ if __name__ == '__main__':
     p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
     # print(p0)
 
-    filename = "../MCMC_outputs/trimmed_60w_7500it_250303-both.h5"
+    filename = "../MCMC_outputs/trimmed_60w_7500it_250304-both.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
