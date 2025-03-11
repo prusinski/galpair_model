@@ -17,7 +17,7 @@ z = 2.3 # redshift
 Rs = 27 # kpc = Rvir = 90 kpc
 H = cosmo.H(z).to('km/s/kpc').value
 
-noise_level = 0.05
+noise_level = 0.02
 A = 1.2e7 #* u.km**2/u.s**2
 
 bres = 5 # kpc
@@ -315,12 +315,12 @@ def lnlike(theta):
 def lnprior(theta):
     vi, voff, a0out, a0in, gout, gin = theta
 
-    vir = (400 < vi < 1100)
-    voffr = (-500 < voff < -400)
+    vir = (730 < vi < 780)
+    voffr = (-550 < voff < 0)
     a0outr = (0 < a0out < 0.4)
     a0inr = (0. < a0in < 0.4)
-    goutr = (0. < gout < 3)
-    ginr = (0.3 < gin < 0.5)
+    goutr = (0.2 < gout < 0.4)
+    ginr = (0. < gin < 1.5)
 
     if vir and voffr and a0outr and a0inr and goutr and ginr:
         return 0.0
@@ -337,13 +337,13 @@ if __name__ == '__main__':
 
     nwalkers = 60
     niter = 7500
-    initial = np.array([750, -466, 0.1, 0.1, 0.32, 0.43])
+    initial = np.array([754, -200, 0.1, 0.1, 0.35, 0.43])
     ndims = len(initial)
 
     p0 = [initial * (1 + 0.01*np.random.randn(ndims)) for i in range(nwalkers)]
     # print(p0)
 
-    filename = "../MCMC_outputs/trimmed_60w_7500it_250304-both.h5"
+    filename = "../MCMC_outputs/trimmed_60w_7500it_250310-both.h5"
     backend = emcee.backends.HDFBackend(filename)
     backend.reset(nwalkers, ndims)
 
